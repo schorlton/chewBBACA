@@ -228,42 +228,7 @@ def loci_translation(genesList, listOfGenomes2, verbose):
 
 def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,jsonReport,verbose,forceReset,contained,chosenTaxon,chosenTrainingFile,inputCDS):
 
-    #~ parser = argparse.ArgumentParser(description="This program call alleles for a set of genomes provided a schema")
-    #~ parser.add_argument('-i', nargs='?', type=str, help='List of genome files (list of fasta files)', required=True)
-    #~ parser.add_argument('-g', nargs='?', type=str, help='List of genes (fasta)', required=True)
-    #~ parser.add_argument('-o', nargs='?', type=str, help="Name of the output files", required=True)
-    #~ parser.add_argument('--cpu', nargs='?', type=int, help="Number of cpus, if over the maximum uses maximum -2",
-    #~ required=True)
-    #~ parser.add_argument("-v", "--verbose", help="increase output verbosity", dest='verbose', action="store_true",
-    #~ default=False)
-    #~ parser.add_argument('-b', nargs='?', type=str, help="BLAST full path", required=False, default='blastp')
-    #~ parser.add_argument('--bsr', nargs='?', type=float, help="minimum BSR score", required=False, default=0.6)
-    #~ parser.add_argument("--so", help="split the output per genome", dest='divideOutput', action="store_true",
-    #~ default=False)
-    #~ parser.add_argument('-t', nargs='?', type=str, help="taxon", required=False, default=False)
-    #~ parser.add_argument('--ptf', nargs='?', type=str, help="provide own training file path", required=False, default=False)
-    #~ parser.add_argument("--fc", help="force continue", required=False, action="store_true", default=False)
-    #~ parser.add_argument("--fr", help="force reset", required=False, action="store_true", default=False)
-    #~ parser.add_argument("--contained", help=argparse.SUPPRESS, required=False, action="store_true", default=False)
-    #~ parser.add_argument("--json", help="report in json file", required=False, action="store_true", default=False)
-    #~
-    #~ args = parser.parse_args()
-    #~
-    #~ genomeFiles = args.i
-    #~ genes = args.g
-    #~ cpuToUse = args.cpu
-    #~ BSRTresh = args.bsr
-    #~ verbose = args.verbose
-    #~ BlastpPath = args.b
-    #~ divideOutput = args.divideOutput
-    #~ gOutFile = args.o
-    #~ chosenTaxon = args.t
-    #~ chosenTrainingFile = args.ptf
-    #~ forceContinue = args.fc
-    #~ forceReset = args.fr
-    #~ jsonReport = args.json
-    #~ contained = args.contained
-    divideOutput=False
+
 
     # avoid user to run the script with all cores available, could impossibilitate any usage when running on a laptop
     if cpuToUse > multiprocessing.cpu_count() - 2:
@@ -537,6 +502,23 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
     print ("Wrapping up the results")
 
     output = []
+    for gene in lGenesFiles:
+        filepath = os.path.join(basepath, os.path.basename(gene) + "_result")
+        with open(filepath, 'rb') as f:
+            var = pickle.load(f)
+            output.append(var)
+
+    #print(output)
+    finalResult={}
+    finalResult[os.path.basename(listOfGenomes[0])] = output
+    finalResultStr=json.dumps(finalResult, ensure_ascii=False)
+
+    with open(filepath, 'w') as f:
+        pickle.dump(finalResult, f)
+
+    return True
+    asd
+
     output2 = []
     for gene in lGenesFiles:
         filepath = os.path.join(basepath, os.path.basename(gene) + "_result.txt")
@@ -548,237 +530,9 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
             var = pickle.load(f)
             output2.append(var)
 
+
     # delete all temp files
-    shutil.rmtree(basepath)
-
-    numberOfLoci = len(output[0][1])
-
-    print ("##################################################\n "+str(numberOfLoci)+" genomes used for "+str(len(output))+"loci" )
-    numberexactmatches = 0
-    for gene in output:
-        for gAllele in gene[1]:
-            try:
-                int(gAllele)
-                numberexactmatches += 1
-            except:
-                pass
-
-    print ("\n used a bsr of : " + str(BSRTresh))
-    print ("\n"+str(numberexactmatches)+" exact matches found out of "+ str (len(output[0][1]) * len(lGenesFiles)))
-    print ("\n"+str(float((numberexactmatches * 100) / (numberOfLoci * len(lGenesFiles))))+" percent of exact matches \n##################################################")
-    print ("\nWriting output files\n")
-
-    # wrapping up the results into a matrix and save in a file
-    try:
-        phylovout = []
-        phylovout2 = []
-        genesnames = []
-        statistics = []
-
-        for gene in lGenesFiles:
-            genename = gene.split("/")
-            genename = genename[len(genename) - 1]
-            genesnames.append(genename)
-        gene = 0
-
-        containedOutpWrite = ''
-        for geneOut in output:
-            genome = 0
-            alleleschema = []
-
-            while genome < numberOfLoci:
-
-                genename = (geneOut[1][genome]).split("_")
-                if len(genename) != 1:
-                    alleleschema.append(genename[1])
-                else:
-                    alleleschema.append(genename[0])
-                genome += 1
-
-            phylovout.append(alleleschema)
-            if len(geneOut[0]) > 0:
-                containedOutpWrite += lGenesFiles[gene] + "\n"
-            for contained2 in geneOut[0]:
-                containedOutpWrite += contained2[0] + "\t" + contained2[1] + "-->" + contained2[2] + "\n"
-            gene += 1
-
-        for geneOut in output2:
-            gene = 0
-            alleleschema = []
-            while gene < len(output2[0]):
-                genename = (geneOut[gene])
-
-                alleleschema.append(genename)
-                gene += 1
-            phylovout2.append(alleleschema)
-
-        genome = 0
-
-        genesHeader = "FILE" + "\t" + ('\t'.join(map(str, genesnames)))
-        finalphylovinput = genesHeader
-        finalphylovinput2 = genesHeader
-
-        if divideOutput:
-            allelesDict = {}
-            contigDict = {}
-            statsDict = {}
-
-        while genome < len(listOfGenomes):
-            auxList = []
-            currentGenome = listOfGenomesBasename[genome]
-            statsaux = [0] * 7  # EXC INF LNF PLOT NIPH ALM ASM
-            finalphylovinput += "\n" + currentGenome + "\t"
-            for gene in phylovout:
-
-                val = str(gene[genome])
-                auxList.append(val)
-                if "INF" in val:
-                    statsaux[1] += 1
-                elif "LNF" in val:
-                    statsaux[2] += 1
-                elif "PLOT" in val:
-                    statsaux[3] += 1
-                elif "NIPH" in val:
-                    statsaux[4] += 1
-                elif "ALM" in val:
-                    statsaux[5] += 1
-                elif "ASM" in val:
-                    statsaux[6] += 1
-                else:
-                    statsaux[0] += 1
-
-            if divideOutput:
-                allelesDict[currentGenome] = ('\t'.join(map(str, auxList)))
-            finalphylovinput += ('\t'.join(map(str, auxList)))
-            genome += 1
-            statistics.append(statsaux)
-
-        genome = 0
-        while genome < len(listOfGenomes):
-            auxList = []
-            currentGenome = listOfGenomesBasename[genome]
-            finalphylovinput2 += "\n" + currentGenome + "\t"
-            for gene in phylovout2:
-                val = str(gene[genome])
-                auxList.append(val)
-
-            if divideOutput:
-                contigDict[currentGenome] = ('\t'.join(map(str, auxList)))
-            finalphylovinput2 += ('\t'.join(map(str, auxList)))
-            genome += 1
-
-        statsHeader = 'Genome\tEXC\tINF\tLNF\tPLOT\tNIPH\tALM\tASM'
-        statswrite = statsHeader
-        genome = 0
-        while genome < len(listOfGenomes):
-            auxList = []
-            currentGenome = listOfGenomesBasename[genome]
-            statswrite += "\n" + currentGenome + "\t"
-            for k in statistics[genome]:
-                auxList.append(str(k))
-
-            if divideOutput:
-                statsDict[currentGenome] = ('\t'.join(map(str, auxList)))
-            statswrite += ('\t'.join(map(str, auxList)))
-            genome += 1
-
-        if not os.path.exists(gOutFile):
-            os.makedirs(gOutFile)
-        # outputpath=os.path.dirname(gOutFile)
-        outputfolder = os.path.join(gOutFile, "results_" + str(time.strftime("%Y%m%dT%H%M%S")))
-        os.makedirs(outputfolder)
-        print (statswrite)
-        # ~ print
-        # ~ print containedOutpWrite
-
-        if jsonReport:
-            runReport = {'finalStatus': 'success'}
-            with open(os.path.join(outputfolder, "reportStatus.json"), 'w') as outfile:
-                json.dump(runReport, outfile)
-
-            aux = []
-            runReport = {}
-            for allelename in ((finalphylovinput.splitlines()[0]).split('\t'))[1:]:
-                aux.append(allelename)
-            runReport['header'] = aux
-            # ~ print runReport
-            for line in (finalphylovinput.splitlines())[1:]:
-                aux2 = line.split('\t')
-                genome = aux2[0]
-                runReport[genome] = aux2[1:]
-
-            with open(os.path.join(outputfolder, "results_alleles.json"), 'w') as outfile:
-                json.dump(runReport, outfile)
-
-            aux = []
-            runReport = {}
-            for allelename in ((statswrite.splitlines()[0]).split('\t'))[1:]:
-                aux.append(allelename)
-            runReport['header'] = aux
-            # ~ print runReport
-            for line in (statswrite.splitlines())[1:]:
-                aux2 = line.split('\t')
-                genome = aux2[0]
-                runReport[genome] = aux2[1:]
-
-            with open(os.path.join(outputfolder, "results_statistics.json"), 'w') as outfile:
-                json.dump(runReport, outfile)
-
-        elif not divideOutput:
-            with open(os.path.join(outputfolder, "results_alleles.tsv"), 'w') as f:
-                f.write(finalphylovinput)
-
-            with open(os.path.join(outputfolder, "results_statistics.tsv"), 'w') as f:
-                f.write(str(statswrite))
-
-            with open(os.path.join(outputfolder, "results_contigsInfo.tsv"), 'w') as f:
-                f.write(str(finalphylovinput2))
-            if contained:
-                with open(os.path.join(outputfolder, "results_contained.txt"), 'w') as f:
-                    f.write(str(containedOutpWrite))
-            with open(os.path.join(outputfolder, "logging_info.txt"), 'w') as f:
-                f.write(starttime)
-                f.write("\nFinished Script at : " + time.strftime("%H:%M:%S-%d/%m/%Y"))
-                f.write("\nnumber of genomes: " + str(len(listOfGenomes)))
-                f.write("\nnumber of loci: " + str(len(lGenesFiles)))
-                f.write("\nused this number of cpus: " + str(cpuToUse))
-                f.write("\nused a bsr of : " + str(BSRTresh))
-
-            print ("checking the existance of paralog genes...")
-            ParalogPrunning.main(os.path.join(outputfolder, "results_contigsInfo.tsv"), outputfolder)
-
-
-        else:
-            for genome in listOfGenomesBasename:
-                currentGenome = os.path.splitext(genome)[0]
-                perGenomeFolder = os.path.join(outputfolder, currentGenome)
-                os.makedirs(perGenomeFolder)
-                with open(os.path.join(perGenomeFolder, currentGenome + "_statistics.txt"), 'w') as f:
-                    f.write(statsHeader + "\n")
-                    f.write(genome)
-                    f.write(statsDict[genome])
-                with open(os.path.join(perGenomeFolder, currentGenome + "_contigsInfo.txt"), 'w') as f:
-                    f.write(genesHeader + "\n")
-                    f.write(genome)
-                    f.write(contigDict[genome])
-                with open(os.path.join(perGenomeFolder, currentGenome + "_alleles.txt"), 'w') as f:
-                    f.write(genesHeader + "\n")
-                    f.write(genome)
-                    f.write(allelesDict[genome])
-
-    except Exception as e:
-        print (e)
-
-        exc_type, exc_obj, tb = sys.exc_info()
-        lineno = tb.tb_lineno
-        print (lineno)
-        if jsonReport:
-            runReport = {'finalStatus': 'error : ' + str(e) + ' at line: ' + str(lineno)}
-            with open(os.path.join(outputfolder, 'reportStatus.json'), 'w') as outfile:
-                json.dump(runReport, outfile)
-        else:
-            print (e)
-            print (lineno)
+    # shutil.rmtree(basepath)
 
     print (starttime)
     print ("Finished Script at : " + time.strftime("%H:%M:%S-%d/%m/%Y"))
