@@ -506,14 +506,18 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
         filepath = os.path.join(basepath, os.path.basename(gene) + "_result")
         with open(filepath, 'rb') as f:
             var = pickle.load(f)
+            #print(var)
             output.append(var)
 
     #print(output)
     finalResult={}
     finalResult[os.path.basename(listOfGenomes[0])] = output
     finalResultStr=json.dumps(finalResult, ensure_ascii=False)
-
-    with open(filepath, 'w') as f:
+    
+    finalResultFileName=os.path.basename(listOfGenomes[0])+"_final_result"
+    print(finalResultFileName)
+    
+    with open(finalResultFileName, 'wb') as f:
         pickle.dump(finalResult, f)
 
     return True
