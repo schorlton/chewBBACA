@@ -495,6 +495,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                     listFoundAmbiguities = []
                     listambiguousBases = ['K', 'M', 'R', 'Y', 'S', 'W', 'B', 'V', 'H', 'D', 'X', 'N', '-', '.']
                     listFoundAmbiguities = [e for e in listambiguousBases if e in alleleStr]
+                    newResultsSample[os.path.basename(geneFile)] = [alleleI,'LNF']
 
                 if bestmatch[0] == 0 or len(listFoundAmbiguities) > 0:
 

@@ -496,6 +496,9 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
     
     with open(finalResultFileName, 'wb') as f:
         pickle.dump(finalResult, f)
+    
+    # delete all temp files
+    shutil.rmtree(basepath)
 
     return True
     asd
