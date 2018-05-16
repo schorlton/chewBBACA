@@ -343,7 +343,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
             intersection = list(intersection)
 
             if len(intersection) > 1:
-                newResultsSample[os.path.basename(geneFile)] = 'NIPHEM'
+                newResultsSample[os.path.basename(geneFile)] = [alleleI,'NIPHEM']
                 perfectMatchIdAllele.append('NIPHEM')
                 perfectMatchIdAllele2.append('NIPHEM')
                 verboseprint(os.path.basename(genomeFile) + " has " + str(
@@ -359,7 +359,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
 
                 elem = [key for key, value in currentCDSDict.items() if value == alleleStr]
                 if len(elem) > 1:
-                    newResultsSample[os.path.basename(geneFile)] = 'NIPHEM'
+                    newResultsSample[os.path.basename(geneFile)] = [alleleI,'NIPHEM']
                     perfectMatchIdAllele.append('NIPHEM')
                     perfectMatchIdAllele2.append('NIPHEM')
                     verboseprint(os.path.basename(genomeFile) + " has " + str(
@@ -379,7 +379,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                 alleleName = fullAlleleNameList[fullAlleleList.index(alleleStr)]
                 alleleMatchid = int((alleleName.split("_"))[-1])
                 #perfectMatchIdAllele.append(str(alleleMatchid))
-                newResultsSample[os.path.basename(geneFile)] = str(alleleMatchid)
+                newResultsSample[os.path.basename(geneFile)] = [alleleI,str(alleleMatchid)]
 
                 if matchLocation[0] > matchLocation[1]:
                     perfectMatchIdAllele2.append(
@@ -502,18 +502,18 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                     # LOCUS NOT FOUND #
                     ###################
                     if bestmatch[0] == 0:
-                        newResultsSample[os.path.basename(geneFile)] = 'LNF'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'LNF']
                         verboseprint("Locus not found, no matches \n")
                     else:
 
-                        newResultsSample[os.path.basename(geneFile)] = 'LNF'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'LNF']
                         verboseprint("Locus has strange base \n")
 
                 # if more than one BSR >0.6 in two different CDSs it's a Non Paralog Locus
                 elif len(list(set(locationcontigs))) > 1:
                     verboseprint("NIPH", "")
 
-                    newResultsSample[os.path.basename(geneFile)] = 'NIPH'
+                    newResultsSample[os.path.basename(geneFile)] = [alleleI,'NIPH']
 
                     for elem in locationcontigs:
                         verboseprint(elem)
@@ -569,7 +569,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                     # check if contig is smaller than the matched allele
                     if leftmatchContig < leftmatchAllele and rightmatchContig < rightmatchAllele:
 
-                        newResultsSample[os.path.basename(geneFile)] = 'LOTSC'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'LOTSC']
 
                         verboseprint(match, contigname, geneFile, leftmatchAllele, rightmatchAllele,
                                      "Locus is bigger than the contig \n")
@@ -577,7 +577,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
 
                     elif leftmatchContig < leftmatchAllele:
 
-                        newResultsSample[os.path.basename(geneFile)] = 'PLOT3'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'PLOT3']
 
                         verboseprint(match, contigname, geneFile, leftmatchAllele, rightmatchAllele,
                                      "Locus is on the 3' tip of the contig \n")
@@ -586,7 +586,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                     elif rightmatchContig < rightmatchAllele:
 
 
-                        newResultsSample[os.path.basename(geneFile)] = 'PLOT5'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'PLOT5']
 
                         verboseprint(match, contigname, geneFile, leftmatchAllele, rightmatchAllele,
                                      "Locus is on the 5' tip of the contig \n")
@@ -597,13 +597,13 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
 
                         verboseprint("Locus is larger than mode", moda, alleleStr)
 
-                        newResultsSample[os.path.basename(geneFile)] = 'ALM'
+                        newResultsSample[os.path.basename(geneFile)] = [alleleI,'ALM']
 
                     elif float(len(alleleStr)) < moda - (moda * 0.2):
 
                         verboseprint("Locus is smaller than mode", moda, alleleStr)
 
-                        newResultsSample[os.path.basename(geneFile)] ='ASM'
+                        newResultsSample[os.path.basename(geneFile)] =[alleleI,'ASM']
 
                     else:
                         #######################
@@ -628,10 +628,10 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                                 break
 
                         if not Reversed:
-                            newResultsSample[os.path.basename(geneFile)] = str(alleleStr)
+                            newResultsSample[os.path.basename(geneFile)] = [alleleI,str(alleleStr)]
                             #newResultsSample[os.path.basename(geneFile)] = str(contigname) + "&" + str((matchLocation[0])-1) + "-" + str(matchLocation[1]) + "&" + "+"
                         else:
-                            newResultsSample[os.path.basename(geneFile)] = str(alleleStr)
+                            newResultsSample[os.path.basename(geneFile)] = [alleleI,str(alleleStr)]
                             #newResultsSample[os.path.basename(geneFile)] = str(contigname) + "&" + str((matchLocation[0])-1) + "-" + str(matchLocation[1]) + "&" + "-"
 
 
@@ -642,7 +642,7 @@ def main(input_file,temppath,blastPath,verbose,bsrTresh):
                 print ("some error occurred")
                 print (e)
                 print ('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
-                newResultsSample[os.path.basename(geneFile)] = "ERROR"
+                newResultsSample[os.path.basename(geneFile)] = [alleleI,"ERROR"]
 
 
     

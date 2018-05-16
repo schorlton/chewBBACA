@@ -234,34 +234,6 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
     if cpuToUse > multiprocessing.cpu_count() - 2:
         print ("Warning, you are close to use all your cpus, if you are using a laptop you may be uncapable to perform any action")
 
-    taxonList = {'Campylobacter jejuni': 'trained_campyJejuni.trn',
-                 'Acinetobacter baumannii': 'trained_acinetoBaumannii.trn',
-                 'Streptococcus agalactiae': 'trained_strepAgalactiae.trn',
-                 'Haemophilus influenzae': 'trained_haemoInfluenzae_A.trn',
-                 'Yersinia enterocolitica': 'trained_yersiniaEnterocolitica.trn',
-                 'Escherichia coli': 'trained_eColi.trn',
-                 'Enterococcus faecium': 'trained_enteroFaecium.trn',
-                 'Staphylococcus haemolyticus': 'trained_staphHaemolyticus.trn',
-                 'Salmonella enterica': 'trained_salmonellaEnterica_enteritidis.trn',
-                 'Staphylococcus aureus': 'trained_StaphylococcusAureus.trn',
-                 'Streptococcus pneumoniae': 'trained_strepPneumoniae.trn'
-                 }
-    if isinstance(chosenTaxon, str):
-        trainingFolderPAth = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'TrainingFiles4Prodigal'))
-        try:
-            chosenTaxon = os.path.join(trainingFolderPAth, taxonList[chosenTaxon])
-
-            if os.path.isfile(chosenTaxon):
-                print ("will use this training file : " + chosenTaxon)
-            else:
-                print ("training file don't exist "+chosenTaxon)
-                return "retry"
-        except:
-            print("Your chosen taxon is not attributed, select one from:")
-            for elem in taxonList.keys():
-                print (elem)
-            return "retry"
-
     if isinstance(chosenTrainingFile, str):
         trainingFolderPAth = os.path.abspath(chosenTrainingFile)
         try:
@@ -293,13 +265,17 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
     stdout, stderr = proc.communicate()
     version_string = stdout.decode('utf8')
     blast_version_pat = re.compile(r'2.[5-9]')
-    if not blast_version_pat.search(version_string):
-        m = blast_version_pat.search(version_string).group()
-        print ("your blast version is " + str(version_string))
-        print ("update your blast to 2.5.0 or above, will exit program")
-        sys.exit()
-    else:
-        print ("blast version is up to date, the program will continue")
+    try:
+        if not blast_version_pat.search(version_string):
+            m = blast_version_pat.search(version_string).group()
+            print ("your blast version is " + str(version_string))
+            print ("update your blast to 2.5.0 or above, will exit program")
+            sys.exit()
+        else:
+            print ("blast version is up to date, the program will continue")
+    except:
+        print("Something went wrong. Your blast version is " + str(version_string))
+        print("update your blast to 2.5.0 or above, will exit program")	
 
     starttime = "\nStarting Script at : " + time.strftime("%H:%M:%S-%d/%m/%Y")
     print (starttime)
@@ -516,6 +492,7 @@ def main(genomeFiles,genes,cpuToUse,gOutFile,BSRTresh,BlastpPath,forceContinue,j
     
     finalResultFileName=os.path.basename(listOfGenomes[0])+"_final_result"
     print(finalResultFileName)
+    print(finalResult)
     
     with open(finalResultFileName, 'wb') as f:
         pickle.dump(finalResult, f)
