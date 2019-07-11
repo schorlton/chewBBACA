@@ -1,3 +1,6 @@
+# Plasmid chewBBACA
+This is a fork of chewBBACA 2.6.3 for wgMLST scheme development. The only modification is changing prodigal running mode from `single` to `meta` to enable anonymous CDS prediction from plasmid sequences.
+
 # chewBBACA: Quick Usage
 
 **chewBBACA** stands for "BSR-Based Allele Calling Algorithm". The "chew" part could be thought of as "Comprehensive and  Highly Efficient Workflow" 
