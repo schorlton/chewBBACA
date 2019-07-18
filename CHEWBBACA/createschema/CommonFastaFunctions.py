@@ -20,7 +20,7 @@ def Create_Blastdb(questionDB, overwrite, dbtypeProt):
         dirname = '.'
     basename = os.path.splitext(base)[0]
     ensure_dir(dirname + "/blastdbs")
-    name = dirname + "/blastdbs/" + basename + ".dmnd"
+    name = dirname + "/blastdbs/" + basename + "_db"
 
     if not os.path.isfile(name + ".nin") and not os.path.isfile(name + ".nhr") and not os.path.isfile(name + ".nsq"):
 
