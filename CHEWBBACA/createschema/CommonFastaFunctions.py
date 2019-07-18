@@ -20,7 +20,7 @@ def Create_Blastdb(questionDB, overwrite, dbtypeProt):
         dirname = '.'
     basename = os.path.splitext(base)[0]
     ensure_dir(dirname + "/blastdbs")
-    name = dirname + "/blastdbs/" + basename + "_db"
+    name = dirname + "/blastdbs/" + basename + ".dmnd"
 
     if not os.path.isfile(name + ".nin") and not os.path.isfile(name + ".nhr") and not os.path.isfile(name + ".nsq"):
 
@@ -29,7 +29,7 @@ def Create_Blastdb(questionDB, overwrite, dbtypeProt):
                 "makeblastdb -in " + questionDB + " -out " + name + " -dbtype nucl -logfile " + name + "_blast.log")
         else:
             os.system(
-                "makeblastdb -in " + questionDB + " -out " + name + " -dbtype prot -logfile " + name + "_blast.log")
+                "diamond makedb --in " + questionDB + " -d " + name)
 
     elif overwrite:
         if not isProt:
@@ -37,7 +37,7 @@ def Create_Blastdb(questionDB, overwrite, dbtypeProt):
                 "makeblastdb -in " + questionDB + " -out " + name + " -dbtype nucl -logfile " + name + "_blast.log")
         else:
             os.system(
-                "makeblastdb -in " + questionDB + " -out " + name + " -dbtype prot -logfile " + name + "_blast.log")
+                "diamond makedb --in " + questionDB + " -d " + name)
 
     else:
         print("BLAST DB files found. Using existing DBs..")

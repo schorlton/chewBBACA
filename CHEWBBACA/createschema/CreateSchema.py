@@ -246,11 +246,10 @@ def main(genes,sizethresh,cpuToUse,proteinFIlePath,outputFIlePath,BlastpPath,bsr
     blast_out_file = geneF + '.xml'
     # ------------------------------ RUNNING BLAST ------------------------------ #
     if cpuToUse:
-        cline = NcbiblastpCommandline(cmd=BlastpPath, query=geneFile, db=Gene_Blast_DB_name, evalue=0.001,
-                                      out=blast_out_file, outfmt=5, num_threads=int(cpuToUse))
+        cline = 'diamond blastp --more-sensitive -e 0.001 -o ' + blast_out_file + ' -f 5 -p 1 -d ' + Gene_Blast_DB_name + ' -q ' + geneFile
     else:
-        cline = NcbiblastpCommandline(cmd=BlastpPath, query=geneFile, db=Gene_Blast_DB_name, evalue=0.001,
-                                      out=blast_out_file, outfmt=5, num_threads=1)
+        cline = 'diamond blastp --more-sensitive -e 0.001 -o ' + blast_out_file + ' -f 5 -p 1 -d ' + Gene_Blast_DB_name + ' -q ' + geneFile
+                
     blast_records = CommonFastaFunctions.runBlastParser(cline, blast_out_file)
     verboseprint ( "Finished blast")
 
@@ -259,9 +258,10 @@ def main(genes,sizethresh,cpuToUse,proteinFIlePath,outputFIlePath,BlastpPath,bsr
     log = ["removed\tcause\texplanation"]
     for blast_record in blast_records:
 
-        allelename = blast_record.query
+        allelename = blast_record.query 
         allelename = allelename.split(" ")
         allelename = allelename[0]
+        print(allelename)
         alleleLength = len(geneDict[allelename])
 
         try:
